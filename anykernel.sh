@@ -4,118 +4,83 @@
 ### AnyKernel setup
 # global properties
 properties() { '
-kernel.string=ExampleKernel by osm0sis @ xda-developers
+kernel.string=### kernel-oneplus-sm8350 for lemonade/lemonadep ###
 do.devicecheck=1
 do.modules=0
 do.systemless=1
 do.cleanup=1
 do.cleanuponabort=0
-device.name1=maguro
-device.name2=toro
-device.name3=toroplus
-device.name4=tuna
-device.name5=
-supported.versions=
-supported.patchlevels=
-supported.vendorpatchlevels=
+device.name1=OnePlus9Pro
+device.name2=lemonadep
+device.name3=OnePlus9ProTMO
+device.name4=lemonadept
+device.name5=OnePlus9
+device.name6=lemonade
+device.name7=OnePlus9TMO
+device.name8=lemonadet
+device.name9=OnePlus9VZW
+device.name10=lemonadev
+supported.versions=16
 '; } # end properties
 
+## trim partitions
+fstrim -v /data;
 
 ### AnyKernel install
-## boot files attributes
-boot_attributes() {
-set_perm_recursive 0 0 755 644 $RAMDISK/*;
-set_perm_recursive 0 0 750 750 $RAMDISK/init* $RAMDISK/sbin;
-} # end attributes
 
 # boot shell variables
-BLOCK=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot;
-IS_SLOT_DEVICE=0;
+BLOCK=boot;
+IS_SLOT_DEVICE=1;
 RAMDISK_COMPRESSION=auto;
 PATCH_VBMETA_FLAG=auto;
+NO_VBMETA_PARTITION_PATCH=1;
 
 # import functions/variables and setup patching - see for reference (DO NOT REMOVE)
 . tools/ak3-core.sh;
 
 # boot install
-dump_boot; # use split_boot to skip ramdisk unpack, e.g. for devices with init_boot ramdisk
+dump_boot;
 
-# init.rc
-backup_file init.rc;
-replace_string init.rc "cpuctl cpu,timer_slack" "mount cgroup none /dev/cpuctl cpu" "mount cgroup none /dev/cpuctl cpu,timer_slack";
-
-# init.tuna.rc
-backup_file init.tuna.rc;
-insert_line init.tuna.rc "nodiratime barrier=0" after "mount_all /fstab.tuna" "\tmount ext4 /dev/block/platform/omap/omap_hsmmc.0/by-name/userdata /data remount nosuid nodev noatime nodiratime barrier=0";
-append_file init.tuna.rc "bootscript" init.tuna;
-
-# fstab.tuna
-backup_file fstab.tuna;
-patch_fstab fstab.tuna /system ext4 options "noatime,barrier=1" "noatime,nodiratime,barrier=0";
-patch_fstab fstab.tuna /cache ext4 options "barrier=1" "barrier=0,nomblk_io_submit";
-patch_fstab fstab.tuna /data ext4 options "data=ordered" "nomblk_io_submit,data=writeback";
-append_file fstab.tuna "usbdisk" fstab;
-
-write_boot; # use flash_boot to skip ramdisk repack, e.g. for devices with init_boot ramdisk
+write_boot;
 ## end boot install
 
 
-## init_boot files attributes
-#init_boot_attributes() {
-#set_perm_recursive 0 0 755 644 $RAMDISK/*;
-#set_perm_recursive 0 0 750 750 $RAMDISK/init* $RAMDISK/sbin;
-#} # end attributes
-
-# init_boot shell variables
-#BLOCK=init_boot;
-#IS_SLOT_DEVICE=1;
-#RAMDISK_COMPRESSION=auto;
-#PATCH_VBMETA_FLAG=auto;
-
-# reset for init_boot patching
-#reset_ak;
-
-# init_boot install
-#dump_boot; # unpack ramdisk since it is the new first stage init ramdisk where overlay.d must go
-
-#write_boot;
-## end init_boot install
-
-
-## vendor_kernel_boot shell variables
-#BLOCK=vendor_kernel_boot;
-#IS_SLOT_DEVICE=1;
-#RAMDISK_COMPRESSION=auto;
-#PATCH_VBMETA_FLAG=auto;
-
-# reset for vendor_kernel_boot patching
-#reset_ak;
-
-# vendor_kernel_boot install
-#split_boot; # skip unpack/repack ramdisk, e.g. for dtb on devices with hdr v4 and vendor_kernel_boot
-
-#flash_boot;
-## end vendor_kernel_boot install
-
-
-## vendor_boot files attributes
-#vendor_boot_attributes() {
-#set_perm_recursive 0 0 755 644 $RAMDISK/*;
-#set_perm_recursive 0 0 750 750 $RAMDISK/init* $RAMDISK/sbin;
-#} # end attributes
-
 # vendor_boot shell variables
-#BLOCK=vendor_boot;
-#IS_SLOT_DEVICE=1;
-#RAMDISK_COMPRESSION=auto;
-#PATCH_VBMETA_FLAG=auto;
+BLOCK=vendor_boot;
+IS_SLOT_DEVICE=1;
+RAMDISK_COMPRESSION=auto;
+PATCH_VBMETA_FLAG=auto;
+NO_VBMETA_PARTITION_PATCH=1;
 
 # reset for vendor_boot patching
-#reset_ak;
+reset_ak;
 
 # vendor_boot install
-#dump_boot; # use split_boot to skip ramdisk unpack, e.g. for dtb on devices with hdr v4 but no vendor_kernel_boot
+dump_boot;
 
-#write_boot; # use flash_boot to skip ramdisk repack, e.g. for dtb on devices with hdr v4 but no vendor_kernel_boot
+write_boot;
 ## end vendor_boot install
 
+# Install custom boot script module if ksu is present
+if [ -d /data/adb/ksu ]; then
+    ui_print "- KernelSU detected, installing kernel tweaks module..."
+
+    MODDIR="/data/adb/modules/kernel-tweaks"
+    
+    if [ -d $MODDIR ]; then
+        ui_print "Module folder exists, updating..."
+        rm -rf $MODDIR
+    fi
+    
+    mkdir -p $MODDIR
+  
+    # Copy files
+    cp ksu_module/* $MODDIR
+
+    # Set permissions
+    chmod 644 $MODDIR/module.prop
+    chmod 755 $MODDIR/service.sh
+    chmod 755 $MODDIR/config.sh
+
+    ui_print "Kernel Tweaks module installed!"
+fi

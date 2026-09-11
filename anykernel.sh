@@ -81,6 +81,7 @@ if [ -d /data/adb/ksu ]; then
     chmod 644 $MODDIR/module.prop
     chmod 755 $MODDIR/service.sh
     chmod 755 $MODDIR/config.sh
+    chmod 755 $MODDIR/action.sh
 
     ui_print "Kernel Tweaks module installed!"
 fi

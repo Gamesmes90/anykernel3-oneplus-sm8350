@@ -1,6 +1,6 @@
-id=kernel.tweaks
+id=kernel-tweaks
 name=Kernel Tweaks
-version=1.0
-versionCode=1
+version=2.0
+versionCode=2
 author=Gamesmes90
-description=Post-boot tweaks
+description=Post-boot tweaks and update checker

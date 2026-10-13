@@ -20,7 +20,7 @@ device.name7=OnePlus9TMO
 device.name8=lemonadet
 device.name9=OnePlus9VZW
 device.name10=lemonadev
-supported.versions=16
+supported.versions=17
 '; } # end properties
 
 ## trim partitions

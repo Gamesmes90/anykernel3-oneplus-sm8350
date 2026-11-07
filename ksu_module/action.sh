@@ -1,6 +1,6 @@
 #!/system/bin/sh
 
-KERNEL_TAG=1.4.0-a16-20260912
+KERNEL_TAG=
 REPO=Gamesmes90/android_kernel_oneplus_sm8350
 URL="https://github.com/Gamesmes90/android_kernel_oneplus_sm8350/releases/latest"
 
